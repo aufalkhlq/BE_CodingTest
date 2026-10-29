@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class StaticApiToken
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  Closure(Request): (Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+        $expectedToken = (string) config('services.product_api.token');
+        $providedToken = $request->bearerToken();
+
+        if ($expectedToken === '' || $providedToken === null || ! hash_equals($expectedToken, $providedToken)) {
+            return response()->json([
+                'message' => 'Token tidak valid atau tidak tersedia.',
+            ], 401);
+        }
+
+        return $next($request);
+    }
+}
